@@ -1,155 +1,185 @@
-<div align="center">
-  <img src="./public/screenshots/promo-graphic.png" width="100%" alt="FXSound for Linux">
-
-  <h1>FXSound for Linux</h1>
-  <p><b>The legendary FXSound audio enhancer, reborn for Linux.</b><br/>
-  A free, open-source, <b>system-wide</b> equalizer &amp; effects suite — a 10-band EQ, five studio effects, 10 presets, and a real-time visualizer that process <i>all</i> your audio. No ads. No telemetry. Ever.</p>
-
-  <p>
-    <a href="https://github.com/Raul909/FXSound_For_Linux/releases/latest"><img src="https://img.shields.io/github/v/release/Raul909/FXSound_For_Linux?style=for-the-badge&color=e63462" alt="Latest Release"></a>
-    <img src="https://img.shields.io/badge/license-MIT-blue?style=for-the-badge" alt="MIT License">
-    <img src="https://img.shields.io/badge/platform-Linux-0d1117?style=for-the-badge&logo=linux&logoColor=white" alt="Linux">
-    <a href="./CONTRIBUTING.md"><img src="https://img.shields.io/badge/PRs-welcome-brightgreen?style=for-the-badge" alt="PRs Welcome"></a>
-  </p>
-
-  <p>
-    <a href="https://fxsound-linux.pages.dev" target="_blank" rel="noopener noreferrer">
-      <img src="https://img.shields.io/badge/Official_Website-Download_Here-e63462?style=for-the-badge" alt="Official Website">
-    </a>
-  </p>
-
-  <p>
-    <a href="https://snapcraft.io/fxsound-linux">
-      <img alt="Get it from the Snap Store" src="https://snapcraft.io/static/images/badges/en/snap-store-black.svg" width="180">
-    </a>
-  </p>
-
-  <p>
-    <a href="https://github.com/Raul909/FXSound_For_Linux/releases/latest">Download AppImage / .deb / .rpm →</a>
-  </p>
-</div>
-
----
-
-<div align="center">
-  <table>
-    <tr>
-      <td align="center"><b>10-Band Equalizer</b></td>
-      <td align="center"><b>Studio Effects</b></td>
-    </tr>
-    <tr>
-      <td><img src="./public/screenshots/screenshot-eq.png" width="100%" alt="FXSound Linux Equalizer"></td>
-      <td><img src="./public/screenshots/screenshot-effects.png" width="100%" alt="FXSound Linux Effects"></td>
-    </tr>
-  </table>
-</div>
-
----
-
-## ✨ Why FXSound for Linux?
-
-- **System-wide, not per-app.** Adds an "FXSound" output device and enhances everything your system plays through it — browser, music player, games — in real time via PipeWire / PulseAudio.
-- **Real DSP, not a mockup.** A Rust audio engine with genuine biquad EQ filters, a full effects chain, a hard limiter, and FFT spectrum analysis. See [How it works](#-how-it-works).
-- **Lightweight & native.** Built with Tauri (Rust + React) — a small binary with low memory and CPU use.
-- **Private & free forever.** MIT-licensed. No ads, no accounts, no telemetry.
-
-## 🎛️ Features
-
-- **10-band parametric EQ** — 32 Hz → 16 kHz, ±12 dB per band, real biquad peaking filters.
-- **5 audio effects** — Fidelity, Ambiance (reverb), Dynamic Boost, 3D Surround, and HyperBass.
-- **10 built-in presets** — Music, Movies, Gaming, Podcast, Bass Boost, Vocal Boost, Deep Bass, Treble Boost, Night Mode, Flat — plus fully custom.
-- **Real-time visualizer** — 32-bin FFT spectrum with smooth animation.
-- **One-click bypass** — instant A/B with the power toggle.
-- **Remembers your setup** — EQ, effects, preset and output device are restored at launch; the output follows your sound settings and hot-plugged headphones.
-- **Universal packaging** — AppImage, `.deb`, `.rpm`, Snap, and AUR.
-
----
-
-## ⚡ Quick Start
-
-The fastest way to install is via the **Snap Store** or the universal **AppImage**.
-
-### 🌐 Official Downloads
-Grab the right build for your system from the landing page:
-**[👉 fxsound-linux.pages.dev](https://fxsound-linux.pages.dev)**
-
-### 📦 Snap Store (Ubuntu, Linux Mint, etc.)
-```bash
-sudo snap install fxsound-linux
-sudo snap connect fxsound-linux:audio-record   # needed on some systems to process system audio
-```
-
-### 🐧 AppImage (Universal Linux — works everywhere, incl. Arch)
-```bash
-chmod +x fxsound-linux_*.AppImage
-./fxsound-linux_*.AppImage
-```
-
-Debian/Ubuntu (`.deb`), Fedora/RHEL (`.rpm`) and Arch (AUR) instructions are in the **[Comprehensive Guide](./GUIDE.md)**.
-
----
-
-## 🔧 Build from Source
-
-For contributors and tinkerers:
-
-```bash
-# Prerequisites: Rust (stable) + Node.js 20+ + Linux audio/webkit dev libs.
-# Debian/Ubuntu:
-sudo apt install libwebkit2gtk-4.1-dev libgtk-3-dev \
-  libayatana-appindicator3-dev librsvg2-dev libpulse-dev
-
-git clone https://github.com/Raul909/FXSound_For_Linux.git
-cd FXSound_For_Linux
-npm install
-npm run tauri:dev      # run in dev mode with hot reload
-npm run tauri:build    # produce AppImage / .deb / .rpm
-```
-
-See the [Comprehensive Guide](./GUIDE.md) for distro-specific dependencies and troubleshooting.
-
----
-
-## 🧠 How it works
-
-While it runs, FXSound adds an output device called **FXSound** and makes it the default, so applications play into it. The routing code ([`src-tauri/src/pulse.rs`](./src-tauri/src/pulse.rs)) records that device, runs the audio through the engine ([`src-tauri/src/audio.rs`](./src-tauri/src/audio.rs)) — ten biquad EQ filters, the effects chain (HyperBass → Fidelity → 3D Surround → Ambiance → Dynamic Boost) and a limiter — and plays the result on your real speakers or headphones, while feeding the FFT that drives the visualizer. When FXSound quits, the device is removed and your previous output is restored.
-
-It's **real audio processing**, not a UI demo. The DSP is unit-tested (`cargo test`), and every pull request runs end-to-end routing tests against real PipeWire and PulseAudio servers ([`tests/audio-routing`](./tests/audio-routing)).
-
----
-
-## 🤝 Contributing
-
-Contributions of every size are welcome — bug fixes, new presets, DSP improvements, packaging, or docs. Start with **[CONTRIBUTING.md](./CONTRIBUTING.md)**.
-
-Good first areas: **presets**, **UI polish**, and **distro packaging**. Browse the [issues](https://github.com/Raul909/FXSound_For_Linux/issues) for ideas.
-
-> ⭐ If FXSound makes your audio better, **star the repo** — it genuinely helps others discover the project.
-
----
-
-## 🗺️ Roadmap
-
-See the [CHANGELOG](./CHANGELOG.md). On deck: **advanced HRTF 3D surround**, **per-app audio routing**, a **tray icon** to keep FXSound running without its window, and **native PipeWire** support.
-
----
-
-## 🚀 Releases & Deployment
-
-Releases are fully automated. Pushing a `v*` tag triggers CI to build and publish:
-
-- The `AppImage`, `.deb`, and `.rpm` to **GitHub Releases**
-- The Snap to the **Snap Store**
-- The landing page to **Cloudflare Pages**
-
-See [DEPLOYMENT.md](./DEPLOYMENT.md) for details.
-
----
+<p align="center">
+  <img src=".github/readme/banner.png" alt="FXSound for Linux, fork do Davi Castro" width="100%">
+</p>
 
 <p align="center">
-  Made for the Linux audio community 🐧<br/>
-  <a href="https://github.com/Raul909/FXSound_For_Linux/issues">Report Bug</a> ·
-  <a href="https://github.com/Raul909/FXSound_For_Linux/issues">Request Feature</a> ·
-  <a href="./CONTRIBUTING.md">Contribute</a> ·
-  <a href="https://fxsound-linux.pages.dev">Website</a>
+  <a href="https://github.com/Raul909/FXSound_For_Linux"><img alt="Fork de Raul909/FXSound_For_Linux" src="https://img.shields.io/badge/Fork_de-Raul909%2FFXSound__For__Linux-e63462?style=for-the-badge&logo=github&logoColor=white"></a>
+  <img alt="Linux" src="https://img.shields.io/badge/Linux-0d1117?style=for-the-badge&logo=linux&logoColor=white">
+  <img alt="Tauri 2" src="https://img.shields.io/badge/Tauri_2.12-24C8DB?style=for-the-badge&logo=tauri&logoColor=white">
+  <img alt="Rust" src="https://img.shields.io/badge/Rust-000000?style=for-the-badge&logo=rust&logoColor=white">
+  <img alt="React 19" src="https://img.shields.io/badge/React_19-20232A?style=for-the-badge&logo=react&logoColor=61DAFB">
+  <img alt="Licença MIT" src="https://img.shields.io/badge/Licen%C3%A7a-MIT-blue?style=for-the-badge">
 </p>
+
+<p align="center"><strong>Português</strong> | <a href="README.en.md">Read in English</a></p>
+
+# FXSound for Linux (fork)
+
+Equalizador de 10 bandas e efeitos (Fidelity, Ambiance, Dynamic Boost, 3D Surround e HyperBass)
+aplicados em **todo o som do sistema**, no estilo do FxSound do Windows. Funciona com PipeWire e
+PulseAudio: cria uma saída **FXSound**, os programas tocam nela e o resultado vai para o seu fone
+ou caixa de som.
+
+Este repositório é um **fork** do [Raul909/FXSound_For_Linux](https://github.com/Raul909/FXSound_For_Linux).
+O original funciona bem para o som, mas no meu uso ele ficava com **um núcleo do processador
+ocupado o tempo todo** só para desenhar a janela, não tinha ícone na bandeja (fechar a janela
+desligava o efeito) e não dava para salvar ou levar a configuração para outro PC. Este fork
+resolve isso. O que mudou está explicado abaixo.
+
+<p align="center">
+  <img src=".github/readme/telas.png" alt="As três abas do app: Equalizer, Effects e a nova aba Settings" width="100%">
+</p>
+
+<p align="center"><sub>Equalizador · Efeitos · Settings (aba nova deste fork)</sub></p>
+
+---
+
+## O que este fork muda em relação ao original
+
+| Problema no original | Causa | O que este fork faz |
+|---|---|---|
+| A janela ocupava **70 a 90% de um núcleo** do processador, mesmo parada | O app força `LIBGL_ALWAYS_SOFTWARE=1` em todo PC (para não quebrar em máquina virtual), então a tela inteira é desenhada pelo processador, sem placa de vídeo | Decide na abertura: usa a **placa de vídeo** onde ela funciona (Mesa + X11, fora de VM, sem driver NVIDIA, fora do Wayland) e o processador nos outros casos. O motivo aparece na aba Settings |
+| Se a placa de vídeo falhar, o app não abre e você não consegue nem trocar a opção | O erro (`EGL_BAD_PARAMETER`) derruba o WebKitGTK antes de a janela existir | Cada abertura pela placa de vídeo deixa uma marca, apagada quando a janela carrega. Se a abertura morre antes disso, a próxima usa o processador sozinha e **guarda a falha** até você trocar a opção, para não ficar abrindo e travando em loop |
+| Mesmo usando a placa de vídeo, a janela parada gastava ~24% | O brilho do botão de power e do ponto "ACTIVE" anima o `box-shadow`, que obriga a redesenhar a janela 60 vezes por segundo, e o renderizador DMABUF ficava desligado | O mesmo brilho agora pulsa pela **opacidade** de uma camada (trabalho do compositor) e o DMABUF fica ligado no modo placa de vídeo. Visual idêntico |
+| O visualizador continuava trabalhando com a janela minimizada ou atrás de outras | O laço de desenho e a consulta ao motor de áudio nunca paravam | Com a janela escondida ou minimizada, o visualizador **para por completo**. Visível, desenha a 30 fps (os dados chegam a 20 Hz, então fica igual) e tem botão para desligar |
+| Fechar a janela desligava o efeito | Não havia ícone na bandeja | **Ícone na bandeja** com Show, Hide, Effects on/off e Quit. Fechar a janela deixa o FXSound rodando. Se o desktop não tiver bandeja, fechar sai como antes |
+| Não dava para salvar nem levar a configuração | Só existia o arquivo interno de configurações | **Exportar e importar** em JSON. O dispositivo de saída fica de fora, porque o nome dele é de cada PC. Arquivo de outro programa é recusado e valores fora da faixa são corrigidos |
+| Precisava abrir o app à mão a cada login | Sem início automático | **Iniciar com o sistema**, com a opção de já começar escondido na bandeja. Funciona com o AppImage |
+
+### Consumo medido (WebKitWebProcess, % de um núcleo)
+
+| Situação | Original | Este fork |
+|---|---|---|
+| Janela aberta, parada | 70 – 90% | **3 – 6%** |
+| Janela minimizada | não medido | **0%** |
+| Janela escondida na bandeja | (fechava o app) | **0%**, com o efeito ativo |
+
+Testado em: Linux Mint 22.3 (kernel 7.0), Cinnamon em X11, PipeWire 1.0.5, AMD Ryzen 5700G
+(Radeon Vega, Mesa) e fone USB. A queda para o processador foi testada simulando uma abertura que
+não chegou na janela. Wayland e NVIDIA seguem no caminho seguro (processador), como no original.
+
+---
+
+## Como usar
+
+### A aba Settings
+
+| Opção | O que faz |
+|---|---|
+| **Spectrum visualizer** | Liga ou desliga as barras. Desligado, não gasta nada. O som não muda |
+| **Keep running in the tray when closed** | Fechar a janela deixa o FXSound na bandeja, com o efeito funcionando. Para sair de vez, use **Quit FXSound** no menu do ícone |
+| **Start with the system** | Abre o FXSound ao entrar na sessão (cria `~/.config/autostart/fxsound-linux.desktop`) |
+| **Start hidden in the tray** | Quando ele abre junto com o sistema, já fica só na bandeja |
+| **Window rendering** | `Automatic` (recomendado), `Graphics card (GPU)` ou `Processor (software)`. Mostra o que está em uso e por quê. Vale a partir da próxima abertura |
+| **Export configuration** | Salva EQ, efeitos, preset e estas opções num `.json` |
+| **Import configuration** | Carrega um `.json` exportado. O dispositivo de saída atual é mantido |
+
+### O ícone da bandeja
+
+| Item | O que faz |
+|---|---|
+| Show FXSound | Mostra a janela |
+| Hide to tray | Esconde a janela; o efeito continua |
+| Effects on | Liga ou desliga o efeito, sincronizado com o botão de power da janela |
+| Quit FXSound | Sai e devolve o som do sistema para a saída normal |
+
+Abrir o FXSound pelo menu com ele já rodando traz a janela de volta, sem abrir uma segunda cópia.
+
+---
+
+## Instalação
+
+### 1. Dependências
+
+Debian, Ubuntu, Linux Mint e derivados:
+
+```bash
+sudo apt install -y build-essential pkg-config libssl-dev file \
+  libwebkit2gtk-4.1-dev libgtk-3-dev librsvg2-dev libpulse-dev libayatana-appindicator3-dev
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+```
+
+Também precisa do Node.js 20 ou mais novo. Fedora e Arch: veja os pacotes equivalentes no
+[GUIDE.md](GUIDE.md).
+
+### 2. Baixar e compilar
+
+```bash
+git clone https://github.com/Davicjc/FXSound_For_Linux.git
+cd FXSound_For_Linux
+npm ci
+npm run tauri build -- --bundles appimage,deb
+```
+
+Os pacotes ficam em `src-tauri/target/release/bundle/`:
+
+- `appimage/fxsound-linux_1.2.0_amd64.AppImage`: roda sem instalar. Copie para onde quiser
+  (eu uso `~/Aplicativos/`) e dê `chmod +x`.
+- `deb/fxsound-linux_1.2.0_amd64.deb`: `sudo apt install ./fxsound-linux_1.2.0_amd64.deb`.
+
+### 3. Primeiro uso
+
+Abra o FXSound, ajuste o equalizador e os efeitos e, se quiser, ligue **Start with the system** na
+aba Settings. O app guarda tudo sozinho em `~/.config/com.fxsound.linux/settings.json`.
+
+---
+
+## Desinstalação
+
+```bash
+rm ~/Aplicativos/fxsound-linux_1.2.0_amd64.AppImage    # ou: sudo apt remove fxsound-linux
+rm -f ~/.config/autostart/fxsound-linux.desktop
+rm -rf ~/.config/com.fxsound.linux                      # configurações (opcional)
+```
+
+---
+
+## Limitações e avisos conhecidos
+
+- **Deixe o volume do sistema em até 100%.** Acima disso o sinal estoura depois do limitador e
+  distorce, principalmente o grave.
+- **Wayland e NVIDIA** ficam no modo processador no automático, porque foi onde o original
+  registrou falhas da placa de vídeo. Dá para forçar `Graphics card (GPU)`; se falhar, o app volta
+  sozinho para o processador na abertura seguinte.
+- **`LIBGL_ALWAYS_SOFTWARE`** definido no ambiente passa por cima de tudo (`1` = processador,
+  `0` = placa de vídeo), como no original.
+- **Não mate o processo do AppImage com `pkill -f` pelo caminho do arquivo.** Isso derruba
+  primeiro o montador do AppImage, e o app fica travado sem os próprios arquivos. Feche pelo
+  **Quit** da bandeja, ou mande `kill` só no processo `fxsound-linux`.
+
+---
+
+## Para quem for mexer no código
+
+| Arquivo | O que tem |
+|---|---|
+| `src-tauri/src/graphics.rs` | Escolha GPU/processador e a proteção contra abertura que falha (novo) |
+| `src-tauri/src/lib.rs` | Comandos do Tauri, bandeja, fechar para a bandeja, exportar/importar |
+| `src-tauri/src/settings.rs` | Configurações salvas, opções da janela e o formato de exportação |
+| `src-tauri/src/audio.rs`, `pulse.rs` | Motor de áudio e roteamento (iguais ao original) |
+| `src/components/SettingsPanel.jsx` | A aba Settings (novo) |
+| `src/components/Visualizer.jsx` | Visualizador, agora parando quando a janela não está visível |
+
+```bash
+cd src-tauri && cargo test && cargo clippy --all-targets && cargo fmt --check
+cd .. && npm run lint
+npm run tauri dev    # roda em modo de desenvolvimento
+```
+
+Os testes do Rust cobrem a escolha do renderizador, a proteção contra falha e o formato de
+exportação/importação (37 testes). Os textos da interface e os comentários do código seguem em
+inglês, como no projeto original, para que as mudanças continuem fáceis de comparar e de
+devolver ao autor.
+
+---
+
+## Créditos e licença
+
+- [Raul909](https://github.com/Raul909/FXSound_For_Linux): o FXSound for Linux original
+  (motor de áudio, roteamento PipeWire/PulseAudio e a interface).
+- [FxSound](https://www.fxsound.com/): o programa do Windows que inspirou o projeto. Não há
+  ligação oficial.
+- Davi Castro: este fork, com a renderização pela placa de vídeo e a proteção contra falha,
+  bandeja, início automático, exportar/importar e a redução de consumo da janela.
+
+Licença MIT, igual ao original (veja `LICENSE`). Histórico de mudanças em [CHANGELOG.md](CHANGELOG.md).
