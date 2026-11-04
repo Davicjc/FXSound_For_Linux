@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Start with the system**, optionally hidden in the tray, from the new **Settings** tab (an XDG autostart entry; AppImage path handled).
 - **Export and import the configuration** (EQ, effects, preset and window options) as a JSON file. The output device is left out, since device names belong to one machine; files are validated and their values clamped on import.
 - **Visualizer switch** in Settings. Off stops all visualizer work, not only the drawing.
+- **Interface in 4 languages: English, Portuguese, Spanish and Chinese (Simplified)**, covering the window, the tray menu and the file dialogs. Automatic follows `LC_ALL` / `LC_MESSAGES` / `LANG`; a Language option in Settings overrides it and applies immediately. Known audio-status messages and import errors are translated too.
 
 ### Changed
 - **The window renders on the GPU where that is known to work** (a Mesa render node under X11, no VM, no NVIDIA driver, not Wayland), instead of always in software. Software rendering kept a CPU core busy just painting the visualizer. Every GPU launch is guarded: if one does not reach the UI, the next launch records it and renders in software until the option is changed. Settings shows which renderer is in use and why, and lets you force either one. `LIBGL_ALWAYS_SOFTWARE` still overrides everything.

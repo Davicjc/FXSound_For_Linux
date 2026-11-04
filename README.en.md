@@ -26,7 +26,7 @@ the window, had no tray icon (closing the window turned the effect off) and offe
 the configuration or take it to another PC. This fork fixes that, as explained below.
 
 <p align="center">
-  <img src=".github/readme/telas.png" alt="The three tabs: Equalizer, Effects and the new Settings tab" width="100%">
+  <img src=".github/readme/telas.en.png" alt="The three tabs: Equalizer, Effects and the new Settings tab" width="100%">
 </p>
 
 <p align="center"><sub>Equalizer · Effects · Settings (new in this fork)</sub></p>
@@ -44,6 +44,7 @@ the configuration or take it to another PC. This fork fixes that, as explained b
 | Closing the window turned the effect off | No tray icon | **Tray icon** with Show, Hide, Effects on/off and Quit. Closing the window keeps FXSound running. Without a tray on the desktop, closing quits as before |
 | No way to save or move the configuration | Only the internal settings file existed | **Export and import** as JSON. The output device is left out, because its name belongs to one machine. Files from other programs are rejected and out-of-range values are clamped |
 | The app had to be started by hand on every login | No autostart | **Start with the system**, optionally hidden in the tray. Works with the AppImage |
+| English only | The interface had hard-coded strings | **4 languages: English, Portuguese, Spanish and Chinese (Simplified)**, in the window, the tray menu and the file dialogs. Automatic follows the system locale (`LC_ALL`, `LC_MESSAGES`, `LANG`) |
 
 ### Measured cost (WebKitWebProcess, % of one core)
 
@@ -69,6 +70,7 @@ never reached the window. Wayland and NVIDIA stay on the safe (software) path, a
 | **Keep running in the tray when closed** | Closing the window keeps FXSound in the tray, effect on. To quit, use **Quit FXSound** in the tray menu |
 | **Start with the system** | Starts FXSound with the session (creates `~/.config/autostart/fxsound-linux.desktop`) |
 | **Start hidden in the tray** | When started with the session, stay in the tray |
+| **Language** | `Automatic` (follows the system), English, Português, Español or 中文. Changes immediately, tray menu included |
 | **Window rendering** | `Automatic` (recommended), `Graphics card (GPU)` or `Processor (software)`. Shows what is in use and why. Applies from the next launch |
 | **Export configuration** | Saves EQ, effects, preset and these options to a `.json` |
 | **Import configuration** | Loads an exported `.json`. The current output device is kept |
@@ -143,6 +145,7 @@ rm -rf ~/.config/com.fxsound.linux                 # settings (optional)
 - **Don't kill the AppImage with `pkill -f` on its path.** That takes down the AppImage mount
   first and leaves the app stuck without its own files. Use **Quit** in the tray, or `kill` only
   the `fxsound-linux` process.
+- **Chinese** is Simplified Chinese; `zh_TW` also maps to it.
 
 ---
 
@@ -155,6 +158,7 @@ rm -rf ~/.config/com.fxsound.linux                 # settings (optional)
 | `src-tauri/src/settings.rs` | Saved settings, window options and the export format |
 | `src-tauri/src/audio.rs`, `pulse.rs` | Audio engine and routing (unchanged) |
 | `src/components/SettingsPanel.jsx` | The Settings tab (new) |
+| `src/i18n.js`, `src-tauri/src/i18n.rs` | Strings for the 4 languages: window, tray and dialogs (new) |
 | `src/components/Visualizer.jsx` | Visualizer, now stopping when the window is not visible |
 
 ```bash
@@ -163,9 +167,10 @@ cd .. && npm run lint
 npm run tauri dev    # development mode
 ```
 
-The Rust tests cover the renderer choice, the failure guard and the export/import format
-(37 tests). UI strings and code comments stay in English, as in the original project, so the
-changes remain easy to compare and to send upstream.
+The Rust tests cover the renderer choice, the failure guard, the export/import format and
+language detection (41 tests). To add a language, add its table to `src/i18n.js` and
+`src-tauri/src/i18n.rs` and its code to `SUPPORTED`. Code comments stay in English, as in the
+original project, so the changes remain easy to compare and to send upstream.
 
 ---
 
@@ -174,7 +179,7 @@ changes remain easy to compare and to send upstream.
 - [Raul909](https://github.com/Raul909/FXSound_For_Linux): the original FXSound for Linux
   (audio engine, PipeWire/PulseAudio routing and the UI).
 - [FxSound](https://www.fxsound.com/): the Windows app that inspired the project. Not affiliated.
-- Davi Castro: this fork: GPU rendering with the failure guard, tray, autostart, export/import
-  and the lower window cost.
+- Davi Castro: this fork: GPU rendering with the failure guard, tray, autostart, export/import,
+  the 4 languages and the lower window cost.
 
 MIT License, same as the original (see `LICENSE`). Change history in [CHANGELOG.md](CHANGELOG.md).

@@ -27,10 +27,10 @@ desligava o efeito) e não dava para salvar ou levar a configuração para outro
 resolve isso. O que mudou está explicado abaixo.
 
 <p align="center">
-  <img src=".github/readme/telas.png" alt="As três abas do app: Equalizer, Effects e a nova aba Settings" width="100%">
+  <img src=".github/readme/telas.png" alt="As três abas do app em português: Equalizador, Efeitos e a nova aba Ajustes" width="100%">
 </p>
 
-<p align="center"><sub>Equalizador · Efeitos · Settings (aba nova deste fork)</sub></p>
+<p align="center"><sub>Equalizador · Efeitos · Ajustes (aba nova deste fork), já em português</sub></p>
 
 ---
 
@@ -38,13 +38,14 @@ resolve isso. O que mudou está explicado abaixo.
 
 | Problema no original | Causa | O que este fork faz |
 |---|---|---|
-| A janela ocupava **70 a 90% de um núcleo** do processador, mesmo parada | O app força `LIBGL_ALWAYS_SOFTWARE=1` em todo PC (para não quebrar em máquina virtual), então a tela inteira é desenhada pelo processador, sem placa de vídeo | Decide na abertura: usa a **placa de vídeo** onde ela funciona (Mesa + X11, fora de VM, sem driver NVIDIA, fora do Wayland) e o processador nos outros casos. O motivo aparece na aba Settings |
+| A janela ocupava **70 a 90% de um núcleo** do processador, mesmo parada | O app força `LIBGL_ALWAYS_SOFTWARE=1` em todo PC (para não quebrar em máquina virtual), então a tela inteira é desenhada pelo processador, sem placa de vídeo | Decide na abertura: usa a **placa de vídeo** onde ela funciona (Mesa + X11, fora de VM, sem driver NVIDIA, fora do Wayland) e o processador nos outros casos. O motivo aparece na aba Ajustes |
 | Se a placa de vídeo falhar, o app não abre e você não consegue nem trocar a opção | O erro (`EGL_BAD_PARAMETER`) derruba o WebKitGTK antes de a janela existir | Cada abertura pela placa de vídeo deixa uma marca, apagada quando a janela carrega. Se a abertura morre antes disso, a próxima usa o processador sozinha e **guarda a falha** até você trocar a opção, para não ficar abrindo e travando em loop |
 | Mesmo usando a placa de vídeo, a janela parada gastava ~24% | O brilho do botão de power e do ponto "ACTIVE" anima o `box-shadow`, que obriga a redesenhar a janela 60 vezes por segundo, e o renderizador DMABUF ficava desligado | O mesmo brilho agora pulsa pela **opacidade** de uma camada (trabalho do compositor) e o DMABUF fica ligado no modo placa de vídeo. Visual idêntico |
 | O visualizador continuava trabalhando com a janela minimizada ou atrás de outras | O laço de desenho e a consulta ao motor de áudio nunca paravam | Com a janela escondida ou minimizada, o visualizador **para por completo**. Visível, desenha a 30 fps (os dados chegam a 20 Hz, então fica igual) e tem botão para desligar |
 | Fechar a janela desligava o efeito | Não havia ícone na bandeja | **Ícone na bandeja** com Show, Hide, Effects on/off e Quit. Fechar a janela deixa o FXSound rodando. Se o desktop não tiver bandeja, fechar sai como antes |
 | Não dava para salvar nem levar a configuração | Só existia o arquivo interno de configurações | **Exportar e importar** em JSON. O dispositivo de saída fica de fora, porque o nome dele é de cada PC. Arquivo de outro programa é recusado e valores fora da faixa são corrigidos |
 | Precisava abrir o app à mão a cada login | Sem início automático | **Iniciar com o sistema**, com a opção de já começar escondido na bandeja. Funciona com o AppImage |
+| Tudo só em inglês | A interface tinha os textos fixos | **4 idiomas: português, inglês, espanhol e chinês (simplificado)**, na janela, no menu da bandeja e nas janelas de abrir e salvar. No automático segue o idioma do sistema (`LC_ALL`, `LC_MESSAGES`, `LANG`) |
 
 ### Consumo medido (WebKitWebProcess, % de um núcleo)
 
@@ -62,26 +63,27 @@ não chegou na janela. Wayland e NVIDIA seguem no caminho seguro (processador), 
 
 ## Como usar
 
-### A aba Settings
+### A aba Ajustes
 
 | Opção | O que faz |
 |---|---|
-| **Spectrum visualizer** | Liga ou desliga as barras. Desligado, não gasta nada. O som não muda |
-| **Keep running in the tray when closed** | Fechar a janela deixa o FXSound na bandeja, com o efeito funcionando. Para sair de vez, use **Quit FXSound** no menu do ícone |
-| **Start with the system** | Abre o FXSound ao entrar na sessão (cria `~/.config/autostart/fxsound-linux.desktop`) |
-| **Start hidden in the tray** | Quando ele abre junto com o sistema, já fica só na bandeja |
-| **Window rendering** | `Automatic` (recomendado), `Graphics card (GPU)` ou `Processor (software)`. Mostra o que está em uso e por quê. Vale a partir da próxima abertura |
-| **Export configuration** | Salva EQ, efeitos, preset e estas opções num `.json` |
-| **Import configuration** | Carrega um `.json` exportado. O dispositivo de saída atual é mantido |
+| **Visualizador de espectro** | Liga ou desliga as barras. Desligado, não gasta nada. O som não muda |
+| **Continuar na bandeja ao fechar** | Fechar a janela deixa o FXSound na bandeja, com o efeito funcionando. Para sair de vez, use **Sair do FXSound** no menu do ícone |
+| **Iniciar com o sistema** | Abre o FXSound ao entrar na sessão (cria `~/.config/autostart/fxsound-linux.desktop`) |
+| **Iniciar escondido na bandeja** | Quando ele abre junto com o sistema, já fica só na bandeja |
+| **Idioma** | `Automático` (segue o sistema), English, Português, Español ou 中文. Muda na hora, inclusive o menu da bandeja |
+| **Desenho da janela** | `Automático` (recomendado), `Placa de vídeo (GPU)` ou `Processador (software)`. Mostra o que está em uso e por quê. Vale a partir da próxima abertura |
+| **Exportar configuração** | Salva EQ, efeitos, preset e estas opções num `.json` |
+| **Importar configuração** | Carrega um `.json` exportado. A saída de áudio atual é mantida |
 
 ### O ícone da bandeja
 
 | Item | O que faz |
 |---|---|
-| Show FXSound | Mostra a janela |
-| Hide to tray | Esconde a janela; o efeito continua |
-| Effects on | Liga ou desliga o efeito, sincronizado com o botão de power da janela |
-| Quit FXSound | Sai e devolve o som do sistema para a saída normal |
+| Mostrar FXSound | Mostra a janela |
+| Esconder na bandeja | Esconde a janela; o efeito continua |
+| Efeitos ligados | Liga ou desliga o efeito, sincronizado com o botão de power da janela |
+| Sair do FXSound | Sai e devolve o som do sistema para a saída normal |
 
 Abrir o FXSound pelo menu com ele já rodando traz a janela de volta, sem abrir uma segunda cópia.
 
@@ -119,8 +121,8 @@ Os pacotes ficam em `src-tauri/target/release/bundle/`:
 
 ### 3. Primeiro uso
 
-Abra o FXSound, ajuste o equalizador e os efeitos e, se quiser, ligue **Start with the system** na
-aba Settings. O app guarda tudo sozinho em `~/.config/com.fxsound.linux/settings.json`.
+Abra o FXSound, ajuste o equalizador e os efeitos e, se quiser, ligue **Iniciar com o sistema** na
+aba Ajustes. O app guarda tudo sozinho em `~/.config/com.fxsound.linux/settings.json`.
 
 ---
 
@@ -139,13 +141,14 @@ rm -rf ~/.config/com.fxsound.linux                      # configurações (opcio
 - **Deixe o volume do sistema em até 100%.** Acima disso o sinal estoura depois do limitador e
   distorce, principalmente o grave.
 - **Wayland e NVIDIA** ficam no modo processador no automático, porque foi onde o original
-  registrou falhas da placa de vídeo. Dá para forçar `Graphics card (GPU)`; se falhar, o app volta
+  registrou falhas da placa de vídeo. Dá para forçar `Placa de vídeo (GPU)`; se falhar, o app volta
   sozinho para o processador na abertura seguinte.
 - **`LIBGL_ALWAYS_SOFTWARE`** definido no ambiente passa por cima de tudo (`1` = processador,
   `0` = placa de vídeo), como no original.
 - **Não mate o processo do AppImage com `pkill -f` pelo caminho do arquivo.** Isso derruba
   primeiro o montador do AppImage, e o app fica travado sem os próprios arquivos. Feche pelo
-  **Quit** da bandeja, ou mande `kill` só no processo `fxsound-linux`.
+  **Sair do FXSound** da bandeja, ou mande `kill` só no processo `fxsound-linux`.
+- **Chinês**: as traduções são em chinês simplificado; `zh_TW` também cai nele.
 
 ---
 
@@ -157,7 +160,8 @@ rm -rf ~/.config/com.fxsound.linux                      # configurações (opcio
 | `src-tauri/src/lib.rs` | Comandos do Tauri, bandeja, fechar para a bandeja, exportar/importar |
 | `src-tauri/src/settings.rs` | Configurações salvas, opções da janela e o formato de exportação |
 | `src-tauri/src/audio.rs`, `pulse.rs` | Motor de áudio e roteamento (iguais ao original) |
-| `src/components/SettingsPanel.jsx` | A aba Settings (novo) |
+| `src/components/SettingsPanel.jsx` | A aba Ajustes (novo) |
+| `src/i18n.js`, `src-tauri/src/i18n.rs` | Textos dos 4 idiomas da janela e da bandeja/diálogos (novo) |
 | `src/components/Visualizer.jsx` | Visualizador, agora parando quando a janela não está visível |
 
 ```bash
@@ -166,10 +170,11 @@ cd .. && npm run lint
 npm run tauri dev    # roda em modo de desenvolvimento
 ```
 
-Os testes do Rust cobrem a escolha do renderizador, a proteção contra falha e o formato de
-exportação/importação (37 testes). Os textos da interface e os comentários do código seguem em
-inglês, como no projeto original, para que as mudanças continuem fáceis de comparar e de
-devolver ao autor.
+Os testes do Rust cobrem a escolha do renderizador, a proteção contra falha, o formato de
+exportação/importação e a detecção de idioma (41 testes). Para adicionar um idioma, inclua a
+tabela em `src/i18n.js` e em `src-tauri/src/i18n.rs` e o código em `SUPPORTED`. Os comentários do
+código seguem em inglês, como no projeto original, para que as mudanças continuem fáceis de
+comparar e de devolver ao autor.
 
 ---
 
@@ -180,6 +185,6 @@ devolver ao autor.
 - [FxSound](https://www.fxsound.com/): o programa do Windows que inspirou o projeto. Não há
   ligação oficial.
 - Davi Castro: este fork, com a renderização pela placa de vídeo e a proteção contra falha,
-  bandeja, início automático, exportar/importar e a redução de consumo da janela.
+  bandeja, início automático, exportar/importar, os 4 idiomas e a redução de consumo da janela.
 
 Licença MIT, igual ao original (veja `LICENSE`). Histórico de mudanças em [CHANGELOG.md](CHANGELOG.md).
