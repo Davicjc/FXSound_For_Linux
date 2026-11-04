@@ -23,7 +23,8 @@ headphones or speakers.
 This repository is a **fork** of [Raul909/FXSound_For_Linux](https://github.com/Raul909/FXSound_For_Linux).
 The original sounds great, but in my use it kept **a CPU core busy all the time** just drawing
 the window, had no tray icon (closing the window turned the effect off) and offered no way to save
-the configuration or take it to another PC. This fork fixes that, as explained below.
+the configuration or take it to another PC. This fork fixes that, as explained below, and all of it was sent upstream in
+[pull request #515](https://github.com/Raul909/FXSound_For_Linux/pull/515).
 
 <p align="center">
   <img src=".github/readme/telas.en.png" alt="The three tabs: Equalizer, Effects and the new Settings tab" width="100%">

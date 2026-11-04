@@ -24,7 +24,8 @@ Este repositório é um **fork** do [Raul909/FXSound_For_Linux](https://github.c
 O original funciona bem para o som, mas no meu uso ele ficava com **um núcleo do processador
 ocupado o tempo todo** só para desenhar a janela, não tinha ícone na bandeja (fechar a janela
 desligava o efeito) e não dava para salvar ou levar a configuração para outro PC. Este fork
-resolve isso. O que mudou está explicado abaixo.
+resolve isso. O que mudou está explicado abaixo, e tudo foi enviado ao autor original no
+[pull request #515](https://github.com/Raul909/FXSound_For_Linux/pull/515).
 
 <p align="center">
   <img src=".github/readme/telas.png" alt="As três abas do app em português: Equalizador, Efeitos e a nova aba Ajustes" width="100%">
