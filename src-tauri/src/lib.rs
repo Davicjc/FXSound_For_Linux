@@ -15,6 +15,7 @@ use tauri_plugin_dialog::DialogExt as _;
 
 mod audio;
 mod graphics;
+mod i18n;
 mod instance;
 mod pulse;
 mod settings;
@@ -42,7 +43,27 @@ struct AppState {
 
 /// Tray menu items that mirror state changed elsewhere.
 struct TrayHandles {
+    show: MenuItem<Wry>,
+    hide: MenuItem<Wry>,
     power: CheckMenuItem<Wry>,
+    quit: MenuItem<Wry>,
+}
+
+impl TrayHandles {
+    fn relabel(&self, lang: &str) {
+        let t = i18n::texts(lang);
+        let _ = self.show.set_text(t.show);
+        let _ = self.hide.set_text(t.hide);
+        let _ = self.power.set_text(t.effects_on);
+        let _ = self.quit.set_text(t.quit);
+    }
+}
+
+impl AppState {
+    /// The interface language in effect ("auto" resolved from the system).
+    fn language(&self) -> &'static str {
+        i18n::resolve(&self.settings.get().unwrap_or_default().ui.language)
+    }
 }
 
 impl AppState {
@@ -182,6 +203,8 @@ struct UiInfo {
     graphics: graphics::Choice,
     tray_available: bool,
     autostart: bool,
+    /// Effective language code, for the page to translate itself.
+    language: &'static str,
 }
 
 #[tauri::command]
@@ -191,18 +214,26 @@ fn get_ui_info(app: AppHandle, state: State<AppState>) -> UiInfo {
         graphics: state.graphics,
         tray_available: state.tray.is_some(),
         autostart: app.autolaunch().is_enabled().unwrap_or(false),
+        language: state.language(),
     }
 }
 
 /// Save the window/rendering options. Rendering changes apply next launch.
 #[tauri::command]
-fn set_ui_settings(state: State<AppState>, ui: UiSettings) -> Result<(), String> {
-    let before = state.settings.get().unwrap_or_default().ui.render_mode;
-    if ui.render_mode != before {
+fn set_ui_settings(state: State<AppState>, mut ui: UiSettings) -> Result<&'static str, String> {
+    if ui.language != "auto" && !i18n::SUPPORTED.contains(&ui.language.as_str()) {
+        ui.language = "auto".into();
+    }
+    let before = state.settings.get().unwrap_or_default().ui;
+    if ui.render_mode != before.render_mode {
         graphics::forget_failure(state.config_dir.as_deref());
     }
     state.settings.update(|s| s.ui = ui);
-    Ok(())
+    let language = state.language();
+    if let Some(tray) = &state.tray {
+        tray.relabel(language);
+    }
+    Ok(language)
 }
 
 /// Start FXSound with the desktop session (an XDG autostart entry).
@@ -228,11 +259,12 @@ fn ui_ready(state: State<AppState>) {
 /// the user cancelled. The path never comes from the web page.
 #[tauri::command]
 async fn export_settings(app: AppHandle, state: State<'_, AppState>) -> Result<bool, String> {
+    let t = i18n::texts(state.language());
     let Some(path) = app
         .dialog()
         .file()
-        .set_title("Export FXSound configuration")
-        .add_filter("FXSound configuration", &["json"])
+        .set_title(t.export_title)
+        .add_filter(t.file_filter, &["json"])
         .set_file_name("fxsound-config.json")
         .blocking_save_file()
     else {
@@ -256,11 +288,12 @@ async fn import_settings(
     app: AppHandle,
     state: State<'_, AppState>,
 ) -> Result<Option<Settings>, String> {
+    let t = i18n::texts(state.language());
     let Some(path) = app
         .dialog()
         .file()
-        .set_title("Import FXSound configuration")
-        .add_filter("FXSound configuration", &["json"])
+        .set_title(t.import_title)
+        .add_filter(t.file_filter, &["json"])
         .blocking_pick_file()
     else {
         return Ok(None);
@@ -268,7 +301,7 @@ async fn import_settings(
     let path = path.into_path().map_err(|e| e.to_string())?;
     let size = std::fs::metadata(&path).map_err(|e| e.to_string())?.len();
     if size > settings::MAX_IMPORT_BYTES {
-        return Err("This is not an FXSound configuration file.".into());
+        return Err(settings::ERR_NOT_CONFIG.into());
     }
     let text = std::fs::read_to_string(&path)
         .map_err(|e| format!("Could not read {}: {e}", path.display()))?;
@@ -287,6 +320,9 @@ async fn import_settings(
     apply_power(&state, imported.powered);
     let stored = imported.clone();
     state.settings.update(move |s| *s = stored);
+    if let Some(tray) = &state.tray {
+        tray.relabel(state.language());
+    }
     log::info!("Imported configuration from {}", path.display());
     Ok(Some(imported))
 }
@@ -339,11 +375,12 @@ fn hide_window(app: &AppHandle) {
     let _ = app.emit("window-visibility", false);
 }
 
-fn build_tray(app: &AppHandle, powered: bool) -> tauri::Result<TrayHandles> {
-    let show = MenuItem::with_id(app, "show", "Show FXSound", true, None::<&str>)?;
-    let hide = MenuItem::with_id(app, "hide", "Hide to tray", true, None::<&str>)?;
-    let power = CheckMenuItem::with_id(app, "power", "Effects on", true, powered, None::<&str>)?;
-    let quit = MenuItem::with_id(app, "quit", "Quit FXSound", true, None::<&str>)?;
+fn build_tray(app: &AppHandle, powered: bool, lang: &str) -> tauri::Result<TrayHandles> {
+    let t = i18n::texts(lang);
+    let show = MenuItem::with_id(app, "show", t.show, true, None::<&str>)?;
+    let hide = MenuItem::with_id(app, "hide", t.hide, true, None::<&str>)?;
+    let power = CheckMenuItem::with_id(app, "power", t.effects_on, true, powered, None::<&str>)?;
+    let quit = MenuItem::with_id(app, "quit", t.quit, true, None::<&str>)?;
     let separator = PredefinedMenuItem::separator(app)?;
     let menu = Menu::with_items(app, &[&show, &hide, &separator, &power, &separator, &quit])?;
 
@@ -368,7 +405,12 @@ fn build_tray(app: &AppHandle, powered: bool) -> tauri::Result<TrayHandles> {
         builder = builder.icon(icon.clone());
     }
     builder.build(app)?;
-    Ok(TrayHandles { power })
+    Ok(TrayHandles {
+        show,
+        hide,
+        power,
+        quit,
+    })
 }
 
 /// Exit cleanly on SIGTERM, SIGINT and SIGHUP (logout, Ctrl+C, `kill`), so the
@@ -482,7 +524,8 @@ pub fn run() {
                 graphics.reason
             );
             let powered = settings.get().map(|s| s.powered).unwrap_or(true);
-            let tray = match build_tray(app.handle(), powered) {
+            let language = i18n::resolve(&saved_ui.language);
+            let tray = match build_tray(app.handle(), powered, language) {
                 Ok(tray) => Some(tray),
                 Err(e) => {
                     // Without a tray, hiding the window would strand the app.

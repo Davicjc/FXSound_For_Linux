@@ -698,8 +698,8 @@ select option {
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  padding: 5px 4px;
-  min-height: 32px;
+  padding: 3px 4px;
+  min-height: 28px;
   border-bottom: 1px solid var(--border);
 }
 

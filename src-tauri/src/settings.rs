@@ -77,6 +77,9 @@ pub struct UiSettings {
     pub start_hidden: bool,
     /// GPU or software rendering; applied at the next launch.
     pub render_mode: RenderMode,
+    /// Interface language: "auto" (follow the system) or a code from
+    /// `i18n::SUPPORTED`.
+    pub language: String,
 }
 
 impl Default for UiSettings {
@@ -86,6 +89,7 @@ impl Default for UiSettings {
             close_to_tray: true,
             start_hidden: true,
             render_mode: RenderMode::Auto,
+            language: "auto".into(),
         }
     }
 }
@@ -123,6 +127,9 @@ impl Settings {
             self.effects.set(name, value);
         }
         self.output_device = self.output_device.filter(|d| !d.is_empty());
+        if !crate::i18n::SUPPORTED.contains(&self.ui.language.as_str()) {
+            self.ui.language = "auto".into();
+        }
         self
     }
 }
@@ -130,6 +137,9 @@ impl Settings {
 /// Marks an exported file so an unrelated JSON file is rejected on import.
 const EXPORT_FORMAT: &str = "fxsound-linux-config";
 const EXPORT_VERSION: u32 = 1;
+/// Error codes the page translates (see `src/i18n.js`).
+pub const ERR_NOT_CONFIG: &str = "error.not-config";
+pub const ERR_NEWER: &str = "error.newer";
 /// A settings file is well under 2 KB; anything far bigger is not one.
 pub const MAX_IMPORT_BYTES: u64 = 64 * 1024;
 
@@ -157,13 +167,12 @@ pub fn export_json(settings: &Settings) -> String {
 /// Read a file written by [`export_json`]. Values are clamped like a hand-edited
 /// settings file; the output device is never taken from the file.
 pub fn import_json(text: &str) -> Result<Settings, String> {
-    let file: ExportFile = serde_json::from_str(text)
-        .map_err(|_| "This is not an FXSound configuration file.".to_string())?;
+    let file: ExportFile = serde_json::from_str(text).map_err(|_| ERR_NOT_CONFIG.to_string())?;
     if file.format != EXPORT_FORMAT {
-        return Err("This is not an FXSound configuration file.".into());
+        return Err(ERR_NOT_CONFIG.into());
     }
     if file.version > EXPORT_VERSION {
-        return Err("This file was made by a newer FXSound; update FXSound to import it.".into());
+        return Err(ERR_NEWER.into());
     }
     Ok(Settings {
         output_device: None,
@@ -355,6 +364,7 @@ mod export_tests {
         s.effects.bass = 80.0;
         s.ui.visualizer = false;
         s.ui.render_mode = RenderMode::Software;
+        s.ui.language = "pt".into();
         s
     }
 
@@ -388,6 +398,12 @@ mod export_tests {
     fn import_clamps_out_of_range_values() {
         let wild = export_json(&sample()).replace("6.5", "400.0");
         assert_eq!(import_json(&wild).unwrap().eq[0], 12.0);
+    }
+
+    #[test]
+    fn an_unknown_language_falls_back_to_automatic() {
+        let file = export_json(&sample()).replace("\"pt\"", "\"klingon\"");
+        assert_eq!(import_json(&file).unwrap().ui.language, "auto");
     }
 
     #[test]
