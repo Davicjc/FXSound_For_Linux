@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-22.04
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Install flatpak-builder
         run: |
@@ -33,7 +33,7 @@ jobs:
           flatpak build-bundle repo fxsound-linux.flatpak com.fxsound.linux
 
       - name: Upload Flatpak bundle as artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: flatpak-bundle
           path: fxsound-linux.flatpak
